@@ -1,0 +1,11 @@
+.venv
+.git
+**/__pycache__
+.ruff_cache
+catboost_info
+logs
+notebook
+tests
+data/processed
+*.md
+!README.md

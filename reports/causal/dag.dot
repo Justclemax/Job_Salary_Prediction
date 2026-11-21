@@ -1,0 +1,13 @@
+digraph {
+  rankdir=LR;
+  node [shape=box, style="rounded"];
+  "experience_years" -> "salary";
+  "skills_count" -> "salary";
+  "certifications" -> "salary";
+  "job_title" -> "salary";
+  "industry" -> "salary";
+  "location" -> "salary";
+  "remote_work" -> "salary";
+  "education_level" -> "salary";
+  "company_size" -> "salary";
+}

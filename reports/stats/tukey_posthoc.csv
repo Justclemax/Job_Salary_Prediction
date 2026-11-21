@@ -1,0 +1,24 @@
+feature,group1,group2,meandiff,p-adj,lower,upper,reject
+education_level,Bachelor,Diploma,-5251.9563,0.0,-5866.4607,-4637.4519,True
+education_level,Bachelor,High School,-10695.195,0.0,-11308.8104,-10081.5797,True
+education_level,Bachelor,Master,10894.7765,0.0,10282.0351,11507.5179,True
+education_level,Bachelor,PhD,21565.474,0.0,20951.2197,22179.7283,True
+education_level,Diploma,High School,-5443.2387,0.0,-6057.3908,-4829.0867,True
+education_level,Diploma,Master,16146.7329,0.0,15533.4541,16760.0116,True
+education_level,Diploma,PhD,26817.4303,0.0,26202.6399,27432.2207,True
+education_level,High School,Master,21589.9716,0.0,20977.5836,22202.3596,True
+education_level,High School,PhD,32260.6691,0.0,31646.7672,32874.5709,True
+education_level,Master,PhD,10670.6975,0.0,10057.6692,11283.7257,True
+company_size,Enterprise,Large,-13905.2865,0.0,-14494.6476,-13315.9253,True
+company_size,Enterprise,Medium,-28078.863,0.0,-28668.8898,-27488.8362,True
+company_size,Enterprise,Small,-35259.5347,0.0,-35848.9513,-34670.118,True
+company_size,Enterprise,Startup,-42327.387,0.0,-42918.6535,-41736.1205,True
+company_size,Large,Medium,-14173.5765,0.0,-14762.4881,-13584.6649,True
+company_size,Large,Small,-21354.2482,0.0,-21942.5485,-20765.9479,True
+company_size,Large,Startup,-28422.1005,0.0,-29012.2541,-27831.9469,True
+company_size,Medium,Small,-7180.6717,0.0,-7769.6389,-6591.7045,True
+company_size,Medium,Startup,-14248.524,0.0,-14839.3424,-13657.7056,True
+company_size,Small,Startup,-7067.8523,0.0,-7658.0614,-6477.6433,True
+remote_work,Hybrid,No,-37.5989,0.9769,-465.5901,390.3923,False
+remote_work,Hybrid,Yes,5309.69,0.0,4880.7739,5738.6061,True
+remote_work,No,Yes,5347.2889,0.0,4918.5581,5776.0196,True

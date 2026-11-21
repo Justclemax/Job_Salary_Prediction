@@ -32,3 +32,22 @@ It includes information about job titles, experience level, education background
 - **Auteur :** Aleesha Nadeem
 - **Licence :** CC0 Public Domain
 - **Plateforme :** [Kaggle](https://www.kaggle.com/datasets/nalisha/job-salary-prediction-dataset)
+
+## Projet
+
+Analyse complète et application de prédiction :
+
+- **Analyse statistique** (`src/salary/stats.py`) : tests avec tailles d'effet, indépendance des variables, modèle log-linéaire, décomposition ANOVA.
+- **Analyse causale** (`src/salary/causal.py`) : DAG, DoWhy (régression ajustée, IPW, réfutations), EconML Double ML, effets hétérogènes (CATE).
+- **Machine learning** (`src/salary/train.py`) : Ridge, Random Forest, XGBoost, LightGBM, CatBoost et un ensemble. Réglage Optuna, validation croisée à 5 plis, intervalles de prédiction conformalisés, SHAP.
+- **Notebook** (`notebook/EDA.ipynb`) : le récit de l'analyse.
+- **Application Streamlit** (`app/`) : 7 pages, thèmes clair et sombre.
+
+```bash
+uv sync                                   # macOS : brew install libomp
+uv run python -m salary.stats             # rapports statistiques
+uv run python -m salary.causal            # rapports causaux
+uv run python -m salary.train             # entraînement des modèles
+uv run streamlit run app/Home.py          # application
+uv run pytest                             # tests
+```

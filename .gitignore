@@ -209,6 +209,10 @@ __marimo__/
 # macOS
 .DS_Store
 
-# Claude
-CLAUDE.md
-.claude/
+
+# --- Project artifacts ---
+data/processed/
+models/*.joblib
+catboost_info/
+.ruff_cache/
+logs/

@@ -1,0 +1,41 @@
+[server]
+headless = true
+runOnSave = false
+
+[browser]
+gatherUsageStats = false
+
+[client]
+toolbarMode = "minimal"
+
+# Two complete themes: Light / Dark / System from the ⋮ > Settings menu
+# ("System" follows the OS). Chart colors per mode live in app/ui.py.
+[theme]
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+headingFont = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+headingFontWeights = [800, 700, 700, 600, 600, 600]
+baseRadius = "14px"
+buttonRadius = "999px"
+showWidgetBorder = true
+
+[theme.light]
+primaryColor = "#5b47d1"
+backgroundColor = "#f6f6f9"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#15151a"
+borderColor = "#e3e2ec"
+linkColor = "#5b47d1"
+dataframeHeaderBackgroundColor = "#f1f0f6"
+chartCategoricalColors = ["#6250d6", "#b8780a", "#0e8a7a"]
+chartSequentialColors = ["#ece8fd", "#c9bff8", "#a596f2", "#7d69e6", "#5a46cf", "#3f2fa3"]
+
+[theme.dark]
+primaryColor = "#b8a4ff"
+backgroundColor = "#0b0b0e"
+secondaryBackgroundColor = "#16161b"
+textColor = "#ececf1"
+borderColor = "#26262e"
+linkColor = "#b8a4ff"
+dataframeHeaderBackgroundColor = "#1d1d24"
+chartCategoricalColors = ["#8f7cf0", "#c4801a", "#1aa37a"]
+chartSequentialColors = ["#221d40", "#352c6e", "#4c3ea0", "#6b58d6", "#9a88f2", "#c9bff8"]

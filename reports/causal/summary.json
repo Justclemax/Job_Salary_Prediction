@@ -1,0 +1,5 @@
+{
+  "n_sample": 80000,
+  "n_treatments": 6,
+  "max_naive_vs_adjusted_gap_pct": 4.099369370566647
+}

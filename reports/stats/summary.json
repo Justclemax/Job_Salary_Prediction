@@ -1,0 +1,13 @@
+{
+  "log_linear": {
+    "r2": 0.9729222375039732,
+    "adj_r2": 0.9729176876573002,
+    "n": 250000,
+    "aic": -855665.7363206195,
+    "bic": -855217.2800241552,
+    "residual_std_log": 0.04370223655468898
+  },
+  "max_feature_association": 0.008515304937148006,
+  "strongest_categorical": "location",
+  "strongest_numeric": "experience_years"
+}
