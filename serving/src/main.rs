@@ -1,13 +1,17 @@
 //! `salary-serve` : serveur HTTP d'inférence.
 //!
-//!     SALARY_MODEL_DIR=models/rust HOST=127.0.0.1 PORT=8000 salary-serve
+//!     salary-serve                    # lit .env (dossier courant ou parents)
+//!     SALARY_MODEL_DIR=models/rust API_HOST=127.0.0.1 API_PORT=8000 salary-serve
 //!     salary-serve healthcheck        # pour le HEALTHCHECK Docker (image sans curl)
+//!
+//! Variables : API_PORT (ou PORT, défaut 8000), API_HOST (ou HOST, défaut 127.0.0.1),
+//! SALARY_MODEL_DIR (défaut models/rust). Les variables déjà définies priment sur .env.
 
 use std::{
     env,
     io::{Read, Write},
     net::TcpStream,
-    path::PathBuf,
+    path::{Path, PathBuf},
     process::ExitCode,
     sync::Arc,
     time::{Duration, Instant},
@@ -15,11 +19,27 @@ use std::{
 
 use salary_serve::{Engine, router};
 
+/// First variable that is set, among `names`.
+fn var(names: &[&str]) -> Option<String> {
+    names.iter().find_map(|n| env::var(n).ok())
+}
+
 fn port() -> u16 {
-    env::var("PORT")
-        .ok()
+    var(&["API_PORT", "PORT"])
         .and_then(|p| p.parse().ok())
         .unwrap_or(8000)
+}
+
+/// Model directory. A relative path that does not exist from the current directory is
+/// resolved from the folder of the `.env` file (e.g. `cargo run` launched in `serving/`).
+fn model_dir(env_dir: Option<&Path>) -> PathBuf {
+    let dir = PathBuf::from(var(&["SALARY_MODEL_DIR"]).unwrap_or_else(|| "models/rust".into()));
+    match env_dir {
+        Some(base) if dir.is_relative() && !dir.exists() && base.join(&dir).exists() => {
+            base.join(dir)
+        }
+        _ => dir,
+    }
 }
 
 /// Minimal HTTP GET /health on localhost, without any extra dependency.
@@ -57,10 +77,11 @@ async fn shutdown() {
 
 #[tokio::main]
 async fn main() -> ExitCode {
+    let env_file = dotenvy::dotenv().ok();
     if env::args().nth(1).as_deref() == Some("healthcheck") {
         return healthcheck();
     }
-    let dir = PathBuf::from(env::var("SALARY_MODEL_DIR").unwrap_or_else(|_| "models/rust".into()));
+    let dir = model_dir(env_file.as_deref().and_then(Path::parent));
     let t0 = Instant::now();
     let engine = match Engine::load(&dir) {
         Ok(e) => Arc::new(e),
@@ -79,7 +100,7 @@ async fn main() -> ExitCode {
         .iter()
         .map(|f| f.heap_bytes())
         .sum();
-    let host = env::var("HOST").unwrap_or_else(|_| "127.0.0.1".into());
+    let host = var(&["API_HOST", "HOST"]).unwrap_or_else(|| "127.0.0.1".into());
     let addr = format!("{host}:{}", port());
     let listener = match tokio::net::TcpListener::bind(&addr).await {
         Ok(l) => l,

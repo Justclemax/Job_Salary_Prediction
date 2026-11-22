@@ -11,3 +11,4 @@ data/processed
 !README.md
 serving/target
 data/external
+.env

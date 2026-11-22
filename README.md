@@ -59,14 +59,24 @@ uv run pytest                             # tests
 
 `salary.export` convertit les forêts LightGBM en un format JSON à plat. Le serveur Rust (`serving/`, axum) les charge sans Python ni bibliothèque de ML native. `cargo test` vérifie sur 500 profils de test que Rust reproduit Python à l'identique (écart mesuré : 0).
 
+Les ports et l'adresse de l'API se règlent dans un fichier `.env` à la racine (`cp .env.example .env`). Il est lu par le serveur Rust, par `uv run --env-file .env` et par `docker compose`.
+
+| Variable | Défaut | Rôle |
+|---|---|---|
+| `STREAMLIT_SERVER_PORT` | 8501 | port de l'application |
+| `API_HOST`, `API_PORT` | 127.0.0.1, 8000 | adresse d'écoute du serveur Rust |
+| `SALARY_MODEL_DIR` | models/rust | bundle exporté |
+| `SALARY_API_URL` | `http://127.0.0.1:${API_PORT}` | API appelée par le simulateur |
+
 ```bash
+cp .env.example .env                                   # puis ajuster les ports
 uv run python -m salary.export                         # écrit models/rust/
-cd serving && cargo run --release                      # http://127.0.0.1:8000
+cd serving && cargo run --release                      # lit ../.env
 curl -s localhost:8000/predict -H 'content-type: application/json' -d '{"job_title":"Data Scientist",
   "experience_years":5,"education_level":"Master","skills_count":8,"industry":"Technology",
   "company_size":"Medium","location":"Germany","remote_work":"Hybrid","certifications":1}'
-# {"salary":139755.8,"low":132746.3,"high":146850.0}
-SALARY_API_URL=http://127.0.0.1:8000 uv run streamlit run app/Home.py   # le simulateur interroge Rust
+# {"salary":139755.8,"low":132746.3,"high":146850.0}   (avec API_PORT=8000)
+uv run --env-file .env streamlit run app/Home.py       # le simulateur interroge Rust
 docker compose up --build                               # app + API (limite mémoire de l'API : 64 Mo)
 ```
 

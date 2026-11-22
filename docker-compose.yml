@@ -1,18 +1,18 @@
-# Streamlit app + Rust inference server.
+# Streamlit app + Rust inference server. Ports read from .env (see .env.example).
 #   uv run python -m salary.train && uv run python -m salary.export
-#   docker compose up --build        # app on :8501, API on :8000
+#   docker compose up --build        # app on :${STREAMLIT_SERVER_PORT}, API on :${API_PORT}
 services:
   api:
     build:
       context: .
       dockerfile: serving/Dockerfile
-    ports: ["8000:8000"]
+    ports: ["${API_PORT:-8000}:8000"]
     mem_limit: 64m
     restart: unless-stopped
 
   app:
     build: .
-    ports: ["8501:8501"]
+    ports: ["${STREAMLIT_SERVER_PORT:-8501}:8501"]
     environment:
       SALARY_API_URL: http://api:8000
     depends_on:
