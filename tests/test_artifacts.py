@@ -1,4 +1,8 @@
-"""Smoke tests on trained artifacts (skipped until `python -m salary.train` has run)."""
+"""Smoke tests on trained artifacts (skipped until `python -m salary.train` has run).
+
+`models/metrics.json` is committed but the `.joblib` files are not, so the model tests
+check for the files they load, not only for the metrics.
+"""
 
 import json
 
@@ -10,7 +14,17 @@ from salary import config as C
 from salary.explain import explain_one
 
 METRICS = C.MODELS_DIR / "metrics.json"
-pytestmark = pytest.mark.skipif(not METRICS.exists(), reason="models not trained")
+
+
+def _trained() -> bool:
+    if not METRICS.exists():
+        return False
+    m = json.loads(METRICS.read_text())
+    names = {m["best_model"], m["shap_model"], "quantile_low", "quantile_high"}
+    return all((C.MODELS_DIR / f"{n}.joblib").exists() for n in names)
+
+
+needs_models = pytest.mark.skipif(not _trained(), reason="models not trained (no .joblib artifacts)")
 
 
 @pytest.fixture(scope="module")
@@ -18,12 +32,14 @@ def metrics():
     return json.loads(METRICS.read_text())
 
 
+@needs_models
 def test_best_model_predicts_profile(metrics, profile):
     model = joblib.load(C.MODELS_DIR / f"{metrics['best_model']}.joblib")
     pred = model.predict(profile)[0]
     assert 30_000 < pred < 400_000
 
 
+@needs_models
 def test_shap_reconstructs_prediction(metrics, profile):
     model = joblib.load(C.MODELS_DIR / f"{metrics['shap_model']}.joblib")
     ex = explain_one(model, profile)
@@ -31,6 +47,7 @@ def test_shap_reconstructs_prediction(metrics, profile):
     assert recon == pytest.approx(model.predict(profile)[0], rel=1e-3)
 
 
+@needs_models
 def test_interval_contains_prediction(metrics, profile):
     lo = joblib.load(C.MODELS_DIR / "quantile_low.joblib").predict(profile)[0]
     hi = joblib.load(C.MODELS_DIR / "quantile_high.joblib").predict(profile)[0]
