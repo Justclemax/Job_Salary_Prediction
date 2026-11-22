@@ -1,0 +1,22 @@
+feature_a,feature_b,measure,value
+experience_years,age,eta,0.8744915577667973
+country,remote,Cramér V,0.27658897266687865
+experience_years,country,eta,0.26380912578718513
+experience_years,job_family,eta,0.23799933320935385
+job_family,education,Cramér V,0.1994103373109611
+country,education,Cramér V,0.1899876295183144
+job_family,remote,Cramér V,0.1457056992912441
+country,age,Cramér V,0.14023209683065319
+experience_years,remote,eta,0.12470352278971834
+remote,age,Cramér V,0.11784082029819401
+experience_years,education,eta,0.1088351534477817
+job_family,age,Cramér V,0.10730721484307852
+job_family,company_size,Cramér V,0.09491684964991537
+company_size,remote,Cramér V,0.09311878326102725
+education,age,Cramér V,0.0890199222050516
+country,company_size,Cramér V,0.08192910906425892
+education,remote,Cramér V,0.07932844227997932
+experience_years,company_size,eta,0.07605622121352096
+country,job_family,Cramér V,0.06791971209396626
+education,company_size,Cramér V,0.05145709525074168
+company_size,age,Cramér V,0.04571620895390807

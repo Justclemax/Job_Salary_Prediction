@@ -1,0 +1,43 @@
+{
+  "source": "Stack Overflow Developer Survey 2025 et 2026, sous licence Open Database License (ODbL) 1.0",
+  "ppp_source": "Banque mondiale, PA.NUS.PPP et PA.NUS.FCRF",
+  "ppp_year": 2025,
+  "years": [
+    "2025",
+    "2026"
+  ],
+  "n": 22143,
+  "n_countries": 29,
+  "n_jobs": 18,
+  "median_usd": 89440.0,
+  "max_association": 0.8744915577667973,
+  "top_association": {
+    "feature_a": "experience_years",
+    "feature_b": "age",
+    "measure": "eta",
+    "value": 0.8744915577667973
+  },
+  "log_ols": {
+    "r2": 0.663265923919459,
+    "r2_adj": 0.6622591994666001,
+    "n": 22143
+  },
+  "best_model": "lightgbm",
+  "best_cv": {
+    "rmse_mean": 43128.74160494721,
+    "rmse_std": 1693.3183205497373,
+    "mae_mean": 27472.82553049858,
+    "mae_std": 730.5493300638807,
+    "medae_mean": 17397.839826847758,
+    "medae_std": 294.64888641428547,
+    "mape_mean": 40.58584579133468,
+    "mape_std": 2.0053914877297463,
+    "r2_mean": 0.6046322354696472,
+    "r2_std": 0.0152015350669859,
+    "within_10pct_mean": 25.181723970472188,
+    "within_10pct_std": 0.6660681215889914
+  },
+  "max_naive_vs_adjusted_gap_pct": 186.98064404046153,
+  "grid_company_size": "100–499",
+  "grid_model": "catboost"
+}

@@ -17,6 +17,7 @@ pages = [
     st.Page("views/modeles.py", title="Modèles", icon=":material/model_training:"),
     st.Page("views/explicabilite.py", title="SHAP", icon=":material/psychology:"),
     st.Page("views/prediction.py", title="Simulateur", icon=":material/calculate:"),
+    st.Page("views/monde.py", title="Monde réel", icon=":material/public:"),
 ]
 st.navigation(pages, position="top").run()
 ui.footer()

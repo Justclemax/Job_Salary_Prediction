@@ -9,3 +9,5 @@ tests
 data/processed
 *.md
 !README.md
+serving/target
+data/external

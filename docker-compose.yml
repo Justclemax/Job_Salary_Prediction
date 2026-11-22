@@ -1,0 +1,21 @@
+# Streamlit app + Rust inference server.
+#   uv run python -m salary.train && uv run python -m salary.export
+#   docker compose up --build        # app on :8501, API on :8000
+services:
+  api:
+    build:
+      context: .
+      dockerfile: serving/Dockerfile
+    ports: ["8000:8000"]
+    mem_limit: 64m
+    restart: unless-stopped
+
+  app:
+    build: .
+    ports: ["8501:8501"]
+    environment:
+      SALARY_API_URL: http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped

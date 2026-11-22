@@ -54,6 +54,12 @@ c[1].metric("Borne basse (10 %)", ui.money(low))
 c[2].metric("Borne haute (90 %)", ui.money(high))
 st.caption(f"Intervalle de prédiction à 80 % (régression quantile conformalisée) : couverture mesurée sur "
            f"le test {m['interval']['coverage']:.1f} %.".replace(".", ",", 1))
+rust = ui.rust_predict(row)
+if rust is not None:
+    r, ms = rust[0].iloc[0], rust[1]
+    ui.reading(f"⚙️ moteur d'inférence Rust (LightGBM, réponse en {f"{ms:.1f}".replace(".", ",")} ms) : {ui.money(r.salary)}, intervalle "
+               f"[{ui.money(r.low)} ; {ui.money(r.high)}]. Il reproduit LightGBM Python au bit près et s'écarte de "
+               f"{ui.pct((r.salary / pred - 1) * 100)} du modèle {ui.model_label(best)}.")
 
 left, right = st.columns(2)
 with left:

@@ -1,6 +1,10 @@
 """Shared helpers for the Streamlit app: theme-aware colors, cached loaders, formatting."""
 
 import json
+import os
+import time
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 import joblib
@@ -71,6 +75,7 @@ def style(fig: go.Figure, height: int = 380, legend: bool = True) -> go.Figure:
         legend=dict(orientation="h", yanchor="bottom", y=1.01, xanchor="left", x=0),
         showlegend=legend, hoverlabel=dict(namelength=-1),
         bargap=0.25, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        separators=", ",  # French: decimal comma, space as thousands separator
     )
     # Outside bar labels must never be clipped by the plot area.
     if any(getattr(tr, "type", "") == "bar" and getattr(tr, "textposition", None) == "outside" for tr in fig.data):
@@ -261,7 +266,8 @@ def decision(title: str, items) -> None:
 
 def footer() -> None:
     st.html("<div class='pied'>Salary Lab · 250 000 profils (Kaggle, CC0) · statistiques SciPy/statsmodels, causalité "
-            "DoWhy/EconML, modèles XGBoost/LightGBM/CatBoost, graphiques Plotly. Thème clair ou sombre : menu ⋮ → "
+            "DoWhy/EconML, modèles XGBoost/LightGBM/CatBoost, graphiques Plotly. Données réelles : Stack Overflow "
+            "Developer Survey 2025–2026 (ODbL 1.0) et Banque mondiale (PPA). Thème clair ou sombre : menu ⋮ → "
             "Settings → Theme.</div>")
 
 
@@ -280,6 +286,11 @@ def load_data() -> pd.DataFrame:
     return load_raw()
 
 
+# Command that produces each reports/ subfolder.
+PRODUCERS = {"stats": "uv run python -m salary.stats", "causal": "uv run python -m salary.causal",
+             "models": "uv run python -m salary.train", "world": "uv run python -W ignore -m salary.world"}
+
+
 def _require(path: Path, how: str) -> Path:
     if not path.exists():
         st.error(f"Artefact manquant : `{path.relative_to(cfg.ROOT)}`. Lancez `{how}`.")
@@ -289,14 +300,12 @@ def _require(path: Path, how: str) -> Path:
 
 @st.cache_data(show_spinner=False)
 def load_csv(group: str, name: str) -> pd.DataFrame:
-    how = {"stats": "uv run python -m salary.stats", "causal": "uv run python -m salary.causal",
-           "models": "uv run python -m salary.train"}[group]
-    return pd.read_csv(_require(cfg.REPORTS_DIR / group / name, how))
+    return pd.read_csv(_require(cfg.REPORTS_DIR / group / name, PRODUCERS[group]))
 
 
 @st.cache_data(show_spinner=False)
 def load_parquet(group: str, name: str) -> pd.DataFrame:
-    return pd.read_parquet(_require(cfg.REPORTS_DIR / group / name, "uv run python -m salary.train"))
+    return pd.read_parquet(_require(cfg.REPORTS_DIR / group / name, PRODUCERS[group]))
 
 
 @st.cache_data(show_spinner=False)
@@ -325,6 +334,28 @@ def feature_label(name: str) -> str:
 def seq_scale() -> list:
     s = colors()["seq"]
     return [[i / (len(s) - 1), c] for i, c in enumerate(s)]
+
+
+# ---------- Rust inference server (serving/) ----------
+
+API_URL = os.environ.get("SALARY_API_URL", "").rstrip("/")
+
+
+def rust_predict(rows: pd.DataFrame) -> tuple[pd.DataFrame, float] | None:
+    """Ask the Rust server for salary + 80 % interval. Returns (predictions, round-trip ms),
+    or None when SALARY_API_URL is unset or the server cannot be reached."""
+    if not API_URL:
+        return None
+    body = json.dumps(rows[cfg.FEATURES].to_dict(orient="records")).encode()
+    req = urllib.request.Request(f"{API_URL}/predict", data=body, headers={"content-type": "application/json"})
+    t0 = time.perf_counter()
+    try:
+        with urllib.request.urlopen(req, timeout=5) as r:  # noqa: S310 (URL from our own config)
+            out = json.load(r)
+    except (urllib.error.URLError, TimeoutError, ValueError) as e:
+        st.warning(f"Moteur Rust injoignable ({API_URL}) : {e}")
+        return None
+    return pd.DataFrame(out["predictions"]), (time.perf_counter() - t0) * 1000
 
 
 def sample(df: pd.DataFrame, n: int, seed: int = cfg.SEED) -> pd.DataFrame:

@@ -37,3 +37,19 @@ def test_interval_contains_prediction(metrics, profile):
     off = metrics["interval"]["conformal_offset"]
     assert lo - off < hi + off
     assert metrics["interval"]["coverage"] >= 78
+
+
+WORLD = C.REPORTS_DIR / "world" / "summary.json"
+
+
+@pytest.mark.skipif(not WORLD.exists(), reason="world analysis not run")
+def test_world_reports_are_consistent():
+    import pandas as pd
+
+    s = json.loads(WORLD.read_text())
+    assert s["n"] > 10_000 and s["n_countries"] >= 20
+    assert 0.3 < s["best_cv"]["r2_mean"] < 0.9
+    grid = pd.read_parquet(C.REPORTS_DIR / "world" / "prediction_grid.parquet")
+    assert grid[["pred_usd", "pred_ppp"]].gt(0).all().all()
+    ate = pd.read_csv(C.REPORTS_DIR / "world" / "ate.csv")
+    assert ate["dml_pct_ci_low"].le(ate["dml_pct"]).all() and ate["dml_pct"].le(ate["dml_pct_ci_high"]).all()

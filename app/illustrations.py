@@ -125,5 +125,24 @@ def prediction(c: dict) -> str:
   <path d="M252 162 L288 162" stroke="{a}" stroke-width="3" stroke-opacity=".35"/>""")
 
 
+def world(c: dict) -> str:
+    b, o, a = c["series"]
+    pins = "".join(
+        f'<path d="M{x} {y} c-9 -14 -9 -24 0 -24 c9 0 9 10 0 24 z" fill="{col}"/>'
+        f'<circle cx="{x}" cy="{y - 16}" r="3.5" fill="#fff"/>'
+        for x, y, col in [(108, 74, o), (166, 64, a), (196, 120, b), (128, 132, a)])
+    return _svg(f"""
+  <circle cx="152" cy="100" r="72" fill="{b}" fill-opacity=".12" stroke="currentColor" stroke-opacity=".35" stroke-width="2"/>
+  <ellipse cx="152" cy="100" rx="30" ry="72" stroke="currentColor" stroke-opacity=".25" stroke-width="2"/>
+  <path d="M80 100 L224 100 M92 64 L212 64 M92 136 L212 136" stroke="currentColor" stroke-opacity=".2" stroke-width="2"/>
+  {pins}
+  <rect x="236" y="38" width="62" height="34" rx="10" fill="{o}"/>
+  <text x="267" y="61" text-anchor="middle" font-size="15" font-weight="700" fill="#fff" font-family="sans-serif">USD</text>
+  <rect x="236" y="128" width="62" height="34" rx="10" fill="{a}"/>
+  <text x="267" y="151" text-anchor="middle" font-size="15" font-weight="700" fill="#fff" font-family="sans-serif">PPA</text>
+  <path d="M267 78 L267 120" stroke="currentColor" stroke-opacity=".5" stroke-width="2.5" stroke-dasharray="4 5"/>
+  <path d="M260 112 L267 121 L274 112" stroke="currentColor" stroke-opacity=".5" stroke-width="2.5"/>""")
+
+
 ART = {"home": home, "exploration": exploration, "statistics": statistics, "causal": causal,
-       "models": models, "explain": explain, "prediction": prediction}
+       "models": models, "explain": explain, "prediction": prediction, "world": world}

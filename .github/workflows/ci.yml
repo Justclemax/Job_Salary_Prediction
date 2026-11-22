@@ -19,3 +19,14 @@ jobs:
       - name: Smoke training run
         run: uv run python -W ignore -m salary.train --fast --models ridge lightgbm --no-tune
       - run: uv run pytest tests/test_artifacts.py
+      - name: Export models for the Rust server
+        run: uv run python -W ignore -m salary.export
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Rust server (format, lint, tests incl. Python parity)
+        working-directory: serving
+        run: |
+          cargo fmt --check
+          cargo clippy --release --all-targets --locked -- -D warnings
+          cargo test --release --locked

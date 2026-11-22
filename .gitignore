@@ -216,3 +216,6 @@ models/*.joblib
 catboost_info/
 .ruff_cache/
 logs/
+data/external/
+models/rust/
+serving/target/
