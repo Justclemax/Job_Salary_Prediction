@@ -1,3 +1,6 @@
+import unicodedata
+
+import pandas as pd
 import plotly.graph_objects as go
 
 import ui
@@ -246,34 +249,116 @@ with t4:
         ui.show(ui.style(fig, height=380, legend=False))
 
 # ----------------------------------------------------------------------------- simulateur
+def _key(s: str) -> str:
+    """Sort French country names ignoring accents (États-Unis between Espagne and Finlande)."""
+    return unicodedata.normalize("NFD", s).encode("ascii", "ignore").decode()
+
+
+MODEL_NAMES = {"catboost": "CatBoost", "lightgbm": "LightGBM", "ridge": "Ridge"}
+_AU = {"Brésil", "Canada", "Danemark", "Mexique", "Portugal", "Royaume-Uni"}
+
+
+def dans(country: str) -> str:
+    """French preposition: en France, au Canada, aux États-Unis, à Singapour."""
+    if country in {"États-Unis", "Pays-Bas"}:
+        return f"aux {country}"
+    if country == "Singapour":
+        return f"à {country}"
+    return f"{'au' if country in _AU else 'en'} {country}"
+
+
+def local_money(v: float, symbol: str) -> str:
+    step = 1000 if v >= 1e6 else 100 if v >= 1e4 else 10
+    return f"{round(v / step) * step:,.0f}".replace(",", "\u202f") + f"\u00a0{symbol}"
+
+
+@st.dialog("Votre salaire estimé", width="large")
+def estimate_popup(country: str, job: str, edu: str, exp: int, remote: str, same: pd.DataFrame) -> None:
+    row = same.set_index("country").loc[country]
+    c = by_country.set_index("country").loc[country]
+    yearly = row.pred_usd * c.fx
+    rank = int((same.pred_usd > row.pred_usd).sum()) + 1
+    rank_ppp = int((same.pred_ppp > row.pred_ppp).sum()) + 1
+    st.html(f"<div class='estim'><div class='pays'>{country} · {c.currency}</div>"
+            f"<div class='profil'>{job} · {edu} · {exp} an{'s' if exp > 1 else ''} d'expérience · {remote.lower()}</div>"
+            f"<div class='montant'>{local_money(yearly, c.currency_symbol)}<span> / an</span></div>"
+            f"<div class='mois'>soit environ <b>{local_money(yearly / 12, c.currency_symbol)} par mois</b> "
+            f"(rémunération annuelle brute déclarée, divisée par 12)</div></div>")
+    k1, k2, k3 = st.columns(3)
+    with k1:
+        rate = "" if c.currency == "USD" else f"au taux moyen {c.fx_year} : 1 $ = {fmt(c.fx, 2)} {c.currency_symbol}"
+        ui.kpi("En dollars", ui.money(row.pred_usd), rate or "monnaie du pays", "lavande")
+    with k2:
+        ui.kpi("Pouvoir d'achat", ui.money(row.pred_ppp), "en dollars PPA, à prix américains", "menthe")
+    with k3:
+        sup = lambda r: f"{r}<sup>{'er' if r == 1 else 'e'}</sup>"  # noqa: E731
+        ui.kpi("Rang mondial", f"{sup(rank)} / {len(same)}",
+               f"en dollars · {sup(rank_ppp)} en pouvoir d'achat", "jaune")
+    gap = (row.pred_usd / c.median_usd - 1) * 100
+    ui.reading(f"le salaire médian de tous les développeurs salariés {dans(country)} est de "
+               f"{local_money(c.median_usd * c.fx, c.currency_symbol)} (n = {nb(c.n)}). Ce profil se situe "
+               f"{ui.pct(abs(gap), signed=False, digits=0)} {'au-dessus' if gap >= 0 else 'en dessous'} de cette médiane.")
+    st.caption(f"Estimation du modèle {MODEL_NAMES.get(S['grid_model'], S['grid_model'])} entraîné sur les salaires déclarés "
+               f"(Stack Overflow {' et '.join(S['years'])}), pour une entreprise de {S['grid_company_size']} salariés. "
+               f"Conversion : taux de change annuel moyen {c.fx_year} de la Banque mondiale. "
+               f"Erreur médiane du modèle : environ {ui.money(S['best_cv']['medae_mean'])} tous pays confondus. "
+               "Une estimation, pas une offre.")
+
+
 with t5:
     grid = ui.load_parquet("world", "prediction_grid.parquet")
-    c1, c2, c3, c4 = st.columns([1.3, 1.2, 1, 1.2])
-    job = c1.selectbox("Métier", so.LEVELS["job_family"], index=so.LEVELS["job_family"].index("Data scientist / IA"))
+    countries = sorted(grid.country.unique(), key=_key)
     edu_levels = [e for e in so.EDUCATION_LEVELS if e in set(grid.education)]
-    edu = c2.select_slider("Diplôme", edu_levels, value="Master")
-    exp = c3.select_slider("Expérience (ans)", sorted(grid.experience_years.unique()), value=5)
-    remote = c4.radio("Mode de travail", so.REMOTE_LEVELS, index=1, horizontal=True)
-    unit = st.segmented_control("Unité", ["Dollars courants", "Pouvoir d'achat (PPA)"], default="Dollars courants")
+    with st.container(border=True, key="sim_monde"):
+        st.markdown("**Votre profil** · choisissez un pays et un métier, puis ouvrez l'estimation dans la "
+                    "monnaie du pays.")
+        r1 = st.columns([1, 1.3, 1.2])
+        country = r1[0].selectbox("Pays", countries, index=countries.index("France"))
+        job = r1[1].selectbox("Métier", so.LEVELS["job_family"],
+                              index=so.LEVELS["job_family"].index("Data scientist / IA"))
+        edu = r1[2].select_slider("Diplôme", edu_levels, value="Master")
+        r2 = st.columns([1, 1.3, 1.2], vertical_alignment="bottom")
+        exp = r2[0].select_slider("Expérience (ans)", sorted(grid.experience_years.unique()), value=5)
+        remote = r2[1].radio("Mode de travail", so.REMOTE_LEVELS, index=1, horizontal=True)
+        clicked = r2[2].button("Voir mon salaire estimé", type="primary", icon=":material/payments:",
+                               width="stretch")
+
+    same = grid[(grid.job_family == job) & (grid.education == edu) & (grid.experience_years == exp)
+                & (grid.remote == remote)]
+    unit = st.segmented_control("Comparer les pays", ["Dollars courants", "Pouvoir d'achat (PPA)"],
+                                default="Dollars courants") or "Dollars courants"
     key = "pred_ppp" if unit == "Pouvoir d'achat (PPA)" else "pred_usd"
-    d = grid[(grid.job_family == job) & (grid.education == edu) & (grid.experience_years == exp)
-             & (grid.remote == remote)].sort_values(key)
-    fig = go.Figure(go.Bar(x=d[key], y=d.country, orientation="h",
-                           marker_color=c_ppp if key == "pred_ppp" else c_usd,
-                           text=[ui.money(v) for v in d[key]], textposition="outside",
-                           hovertemplate="%{y} : %{x:,.0f} $<extra></extra>"))
-    fig.update_layout(title=f"Salaire estimé : {job}, {edu}, {exp} ans, {remote.lower()}",
-                      xaxis_range=[0, d[key].max() * 1.2])
-    ui.show(ui.style(fig, height=760, legend=False))
+    d = same.sort_values(key)
+    hi = c_ppp if key == "pred_ppp" else c_usd
+    is_sel = d.country == country
+    fig = go.Figure(go.Bar(
+        x=d[key], y=d.country, orientation="h",
+        marker=dict(color=[hi if s else col["muted"] for s in is_sel],
+                    opacity=[1 if s else 0.35 for s in is_sel], cornerradius=4),
+        text=[ui.money(v) for v in d[key]], textposition="outside",
+        hovertemplate="%{y} : %{x:,.0f} $<br><i>cliquez pour le détail</i><extra></extra>"))
+    fig.update_layout(title=f"Même profil dans {len(d)} pays ({'dollars PPA' if key == 'pred_ppp' else 'dollars courants'})"
+                            f" · {country} en couleur",
+                      xaxis_range=[0, d[key].max() * 1.2], xaxis_tickformat=",.0f", clickmode="event+select")
+    fig.update_yaxes(tickfont=dict(size=13))
+    event = ui.show(ui.style(fig, height=760, legend=False), key="sim_monde_chart",
+                    on_select="rerun", selection_mode="points")
+    st.caption("Astuce : cliquez sur la barre d'un pays pour ouvrir son estimation.")
+
+    picked = None
+    if event and event.selection.points:
+        picked = event.selection.points[0].get("y")
+    sig = (picked, job, edu, exp, remote)
+    if clicked:
+        estimate_popup(country, job, edu, exp, remote, same)
+    elif picked in set(same.country) and st.session_state.get("_sim_monde_pick") != sig:
+        st.session_state["_sim_monde_pick"] = sig
+        estimate_popup(picked, job, edu, exp, remote, same)
+
     top, bottom = d.iloc[-1], d.iloc[0]
-    fr = d.set_index("country").loc["France", key]
-    ui.reading(f"estimation la plus haute : {top.country} ({ui.money(top[key])}). La plus basse : {bottom.country} "
-               f"({ui.money(bottom[key])}). France : {ui.money(fr)}.")
-    ui.explain_box("Comment lire ce simulateur",
-                   f"Estimations du modèle CatBoost entraîné sur les salaires déclarés. La taille d'entreprise est fixée "
-                   f"à {S['grid_company_size']} salariés, l'année d'enquête à {max(S['years'])} et la tranche d'âge suit "
-                   f"l'expérience. Erreur médiane du modèle : environ {ui.money(S['best_cv']['medae_mean'])}. Une "
-                   "estimation, pas une offre.")
+    me = d.set_index("country").loc[country, key]
+    ui.reading(f"pour ce profil, l'estimation la plus haute est {dans(top.country)} ({ui.money(top[key])}) et la plus "
+               f"basse {dans(bottom.country)} ({ui.money(bottom[key])}). {country} : {ui.money(me)}.")
 
 st.write("")
 st.caption(f"Sources : {S['source']} (survey.stackoverflow.co). {S['ppp_source']}, année {S['ppp_year']}. "

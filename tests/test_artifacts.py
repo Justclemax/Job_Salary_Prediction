@@ -70,6 +70,11 @@ def test_world_reports_are_consistent():
     assert grid[["pred_usd", "pred_ppp"]].gt(0).all().all()
     ate = pd.read_csv(C.REPORTS_DIR / "world" / "ate.csv")
     assert ate["dml_pct_ci_low"].le(ate["dml_pct"]).all() and ate["dml_pct"].le(ate["dml_pct_ci_high"]).all()
+    # The world simulator converts every grid country into its own currency.
+    bc = pd.read_csv(C.REPORTS_DIR / "world" / "by_country.csv").set_index("country")
+    assert set(grid["country"]) <= set(bc.index)
+    assert bc["fx"].gt(0).all() and bc["currency"].str.fullmatch(r"[A-Z]{3}").all()
+    assert bc.loc["États-Unis", "fx"] == 1 and bc.loc["France", "currency"] == "EUR"
 
 
 RUST_SCHEMA = C.MODELS_DIR / "rust" / "schema.json"

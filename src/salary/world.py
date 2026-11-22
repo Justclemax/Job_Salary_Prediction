@@ -299,6 +299,14 @@ def _age_for(exp: int) -> str:
     return "18-24" if exp < 2 else "25-34" if exp < 10 else "35-44" if exp < 20 else "45-54" if exp < 30 else "55-64"
 
 
+def add_currency(by_country: pd.DataFrame, pl: pd.DataFrame) -> None:
+    """Local currency and World Bank exchange rate (local units per USD) for the app."""
+    by_country["fx"] = by_country["iso3"].map(pl["fx"])
+    by_country["fx_year"] = by_country["iso3"].map(pl["fx_year"]).astype(int)
+    by_country["currency"] = by_country["iso3"].map(lambda i: wb.CURRENCIES[i][0])
+    by_country["currency_symbol"] = by_country["iso3"].map(lambda i: wb.CURRENCIES[i][1])
+
+
 def prediction_grid(model, df: pd.DataFrame) -> pd.DataFrame:
     """Predicted salary for every job x education x experience x remote x country.
 
@@ -367,6 +375,7 @@ def run_all(force_download: bool = False, n_sims: int = 10) -> dict:
     by_country["iso3"] = by_country["country"].map(so.ISO3)
     pl = wb.price_level(by_country["iso3"].tolist(), PPP_YEAR).set_index("iso3")
     by_country["price_level"] = by_country["iso3"].map(pl["price_level"])
+    add_currency(by_country, pl)
     by_country.to_csv(OUT / "by_country.csv", index=False)
     by_group(df, "job_family").to_csv(OUT / "by_job.csv", index=False)
     assoc = associations(df)

@@ -86,9 +86,9 @@ def style(fig: go.Figure, height: int = 380, legend: bool = True) -> go.Figure:
     return fig
 
 
-def show(fig: go.Figure, **kw) -> None:
-    st.plotly_chart(fig, theme="streamlit", width="stretch",
-                    config={"displaylogo": False}, **kw)
+def show(fig: go.Figure, **kw):
+    return st.plotly_chart(fig, theme="streamlit", width="stretch",
+                           config={"displaylogo": False}, **kw)
 
 
 def tokens() -> dict:
@@ -174,6 +174,17 @@ h1, h2, h3, h4, h5 {{ letter-spacing: -0.02em; }}
 .decision li {{ margin: .4rem 0; line-height: 1.55; }}
 .decision li::marker {{ color: {t['accent']}; font-weight: 700; }}
 
+.estim {{ border-radius: 22px; padding: 22px 26px; margin-bottom: 1rem; border: 1px solid {t['bord']};
+          background: radial-gradient(90% 160% at 100% 0%, rgba({t['accent_rgb']},.26), transparent 60%), {t['carte2']}; }}
+.estim .pays {{ color: {t['doux']}; text-transform: uppercase; letter-spacing: .16em; font-size: .74rem; font-weight: 700; }}
+.estim .profil {{ color: {t['texte']}; font-size: .95rem; margin-top: .3rem; }}
+.estim .montant {{ color: {t['texte']}; font-size: 3rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; margin: .7rem 0 .3rem; }}
+.estim .montant span {{ color: {t['doux']}; font-size: 1.1rem; font-weight: 600; letter-spacing: 0; }}
+.estim .mois {{ color: {t['doux']}; font-size: .92rem; }}
+.estim .mois b {{ color: {t['texte']}; }}
+[data-testid="stDialog"] div[role="dialog"] {{ border-radius: 26px; background: {t['carte']}; border: 1px solid {t['bord']}; }}
+.st-key-sim_monde {{ background: {t['carte']}; border-radius: 22px !important; }}
+
 .pied {{ color: {t['doux']}; font-size: .8rem; margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid {t['bord']}; }}
 
 @media (max-width: 700px) {{
@@ -181,6 +192,7 @@ h1, h2, h3, h4, h5 {{ letter-spacing: -0.02em; }}
   .sl-hero .sl-art {{ flex-basis: auto; width: 70%; align-self: center; }}
   .sl-hero h1 {{ font-size: 1.7rem; }}
   .kpi .valeur {{ font-size: 1.8rem; }}
+  .estim .montant {{ font-size: 2.2rem; }}
 }}
 </style>
 """

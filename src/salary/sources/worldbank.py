@@ -21,6 +21,16 @@ API = "https://api.worldbank.org/v2/country/{countries}/indicator/{indicator}"
 INDICATORS = {"ppp": "PA.NUS.PPP", "fx": "PA.NUS.FCRF"}
 CACHE = cfg.ROOT / "data" / "external" / "worldbank"
 
+# ISO3 -> (ISO 4217 code, symbol as written after the amount in French).
+_EURO = ("AUT", "BEL", "DEU", "ESP", "FIN", "FRA", "IRL", "ITA", "NLD", "PRT")
+CURRENCIES: dict[str, tuple[str, str]] = {iso: ("EUR", "€") for iso in _EURO} | {
+    "USA": ("USD", "$"), "GBR": ("GBP", "£"), "CHE": ("CHF", "CHF"), "CAN": ("CAD", "$ CA"),
+    "AUS": ("AUD", "$ AU"), "NZL": ("NZD", "$ NZ"), "SGP": ("SGD", "$ SG"), "MEX": ("MXN", "$ MX"),
+    "IND": ("INR", "₹"), "POL": ("PLN", "zł"), "UKR": ("UAH", "₴"), "BRA": ("BRL", "R$"),
+    "SWE": ("SEK", "kr"), "DNK": ("DKK", "kr"), "NOR": ("NOK", "kr"), "CZE": ("CZK", "Kč"),
+    "ROU": ("RON", "lei"), "ISR": ("ILS", "₪"), "ZAF": ("ZAR", "R"), "TUR": ("TRY", "₺"),
+}
+
 
 def fetch(indicator: str, iso3: list[str], start: int = 2018, end: int = 2026,
           force: bool = False) -> pd.DataFrame:
