@@ -1,18 +1,20 @@
-# Streamlit app + Rust inference server. Ports read from .env (see .env.example).
-#   uv run python -m salary.train && uv run python -m salary.export
-#   docker compose up --build        # app on :${STREAMLIT_SERVER_PORT}, API on :${API_PORT}
+# Production (Coolify): no host ports. Coolify's proxy routes the app's domain to the
+# container port 8900; the Rust API is only reachable inside the compose network.
+# In Coolify, set the domain of the "app" service with its port, e.g. https://salaire.example.com:8900
+#
+# Local: `docker compose up --build` also reads docker-compose.override.yml (ports from .env).
 services:
   api:
     build:
       context: .
       dockerfile: serving/Dockerfile
-    ports: ["${API_PORT:-8000}:8000"]
+    expose: ["8000"]
     mem_limit: 64m
     restart: unless-stopped
 
   app:
     build: .
-    ports: ["${STREAMLIT_SERVER_PORT:-8501}:8501"]
+    expose: ["8900"]
     environment:
       SALARY_API_URL: http://api:8000
     depends_on:

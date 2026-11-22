@@ -18,9 +18,9 @@ jobs:
       - run: uv run pytest
       - name: Smoke training run
         run: uv run python -W ignore -m salary.train --fast --models ridge lightgbm --no-tune
-      - run: uv run pytest tests/test_artifacts.py
       - name: Export models for the Rust server
         run: uv run python -W ignore -m salary.export
+      - run: uv run pytest tests/test_artifacts.py
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy

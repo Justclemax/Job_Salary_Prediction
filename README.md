@@ -93,3 +93,11 @@ Mesures sur un Mac Apple Silicon : modèle LightGBM et deux modèles quantiles, 
 `GET /health`, `GET /model` (schéma, arbres, mémoire) et `POST /predict` (un profil, ou une liste d'au plus 10 000 profils). Les profils invalides renvoient une erreur 422 en français, avec l'indice du profil fautif.
 
 Le serveur sert LightGBM plutôt que CatBoost, le modèle retenu en validation croisée (RMSE 5 103 $ contre 5 032 $, soit 1,4 % d'écart). CatBoost encode les catégories avec des statistiques internes et un hachage propres à sa bibliothèque C++, qu'on ne peut pas reproduire fidèlement en Rust pur.
+
+### Déploiement (Coolify)
+
+Choisir le build pack **Docker Compose** avec `docker-compose.yml`. Coolify construit les deux images depuis le dépôt : les modèles de production (`models/*.joblib` et `models/rust/`) sont versionnés pour cela. Aucun port n'est publié sur le serveur : dans Coolify, donner un domaine au service `app` en précisant le port du conteneur, par exemple `https://salaire.mondomaine.com:8900` (le conteneur de l'application écoute sur 8900). L'API Rust reste interne, et l'application la joint par `http://api:8000`.
+
+En local, `docker compose up --build` lit aussi `docker-compose.override.yml`, qui publie les ports définis dans `.env`.
+
+Après un réentraînement : `uv run python -m salary.train && uv run python -m salary.export`, puis commiter `models/`. Un test échoue si le bundle Rust n'est plus synchronisé avec les modèles.

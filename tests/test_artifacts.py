@@ -70,3 +70,14 @@ def test_world_reports_are_consistent():
     assert grid[["pred_usd", "pred_ppp"]].gt(0).all().all()
     ate = pd.read_csv(C.REPORTS_DIR / "world" / "ate.csv")
     assert ate["dml_pct_ci_low"].le(ate["dml_pct"]).all() and ate["dml_pct"].le(ate["dml_pct_ci_high"]).all()
+
+
+RUST_SCHEMA = C.MODELS_DIR / "rust" / "schema.json"
+
+
+@pytest.mark.skipif(not (METRICS.exists() and RUST_SCHEMA.exists()), reason="no Rust bundle")
+def test_rust_bundle_matches_trained_models():
+    schema = json.loads(RUST_SCHEMA.read_text())
+    metrics = json.loads(METRICS.read_text())
+    assert schema["model"]["trained_at"] == metrics["metadata"]["trained_at"], (
+        "models/rust est périmé : relancer `uv run python -m salary.export`")

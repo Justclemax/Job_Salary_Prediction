@@ -1,0 +1,119 @@
+{
+  "format": "salary-forest/1",
+  "features": [
+    {
+      "kind": "numeric",
+      "name": "experience_years",
+      "min": 0,
+      "max": 20
+    },
+    {
+      "kind": "numeric",
+      "name": "skills_count",
+      "min": 1,
+      "max": 19
+    },
+    {
+      "kind": "numeric",
+      "name": "certifications",
+      "min": 0,
+      "max": 5
+    },
+    {
+      "kind": "categorical",
+      "name": "job_title",
+      "levels": [
+        "AI Engineer",
+        "Backend Developer",
+        "Business Analyst",
+        "Cloud Engineer",
+        "Cybersecurity Analyst",
+        "Data Analyst",
+        "Data Scientist",
+        "DevOps Engineer",
+        "Frontend Developer",
+        "Machine Learning Engineer",
+        "Product Manager",
+        "Software Engineer"
+      ]
+    },
+    {
+      "kind": "categorical",
+      "name": "industry",
+      "levels": [
+        "Consulting",
+        "Education",
+        "Finance",
+        "Government",
+        "Healthcare",
+        "Manufacturing",
+        "Media",
+        "Retail",
+        "Technology",
+        "Telecom"
+      ]
+    },
+    {
+      "kind": "categorical",
+      "name": "location",
+      "levels": [
+        "Australia",
+        "Canada",
+        "Germany",
+        "India",
+        "Netherlands",
+        "Remote",
+        "Singapore",
+        "Sweden",
+        "UK",
+        "USA"
+      ]
+    },
+    {
+      "kind": "categorical",
+      "name": "remote_work",
+      "levels": [
+        "No",
+        "Hybrid",
+        "Yes"
+      ]
+    },
+    {
+      "kind": "categorical",
+      "name": "education_level",
+      "levels": [
+        "High School",
+        "Diploma",
+        "Bachelor",
+        "Master",
+        "PhD"
+      ]
+    },
+    {
+      "kind": "categorical",
+      "name": "company_size",
+      "levels": [
+        "Startup",
+        "Small",
+        "Medium",
+        "Large",
+        "Enterprise"
+      ]
+    }
+  ],
+  "interval": {
+    "alpha_low": 0.1,
+    "alpha_high": 0.9,
+    "conformal_offset": 142.94074762088198,
+    "coverage": 80.208
+  },
+  "model": {
+    "name": "lightgbm",
+    "cv_rmse": 5102.730637105103,
+    "test_rmse": 5084.760693356539,
+    "test_r2": 0.9815508078895212,
+    "trained_at": "2026-11-21T23:30:56+00:00",
+    "data_md5": "5aa080a82b2557b3ec963e9b3644ce6c",
+    "fast": false
+  }
+}

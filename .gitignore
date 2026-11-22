@@ -213,9 +213,18 @@ __marimo__/
 # --- Project artifacts ---
 data/processed/
 models/*.joblib
+# Production models are versioned so that Coolify / Docker builds from git work.
+# random_forest (32 MB) stays local: the app only lists it when present.
+!models/catboost.joblib
+!models/lightgbm.joblib
+!models/xgboost.joblib
+!models/ridge.joblib
+!models/dummy.joblib
+!models/ensemble.joblib
+!models/quantile_low.joblib
+!models/quantile_high.joblib
 catboost_info/
 .ruff_cache/
 logs/
 data/external/
-models/rust/
 serving/target/

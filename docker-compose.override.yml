@@ -1,0 +1,7 @@
+# Local only: publishes the ports set in .env. Coolify ignores this file
+# (it runs `docker compose -f docker-compose.yml`).
+services:
+  api:
+    ports: ["${API_PORT:-8000}:8000"]
+  app:
+    ports: ["${STREAMLIT_SERVER_PORT:-8501}:8900"]
