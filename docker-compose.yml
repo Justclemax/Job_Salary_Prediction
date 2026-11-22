@@ -16,7 +16,10 @@ services:
     build: .
     expose: ["8900"]
     environment:
-      SALARY_API_URL: http://api:8000
+      # Coolify magic variable (same syntax as the etp-diabete app): route the
+      # service's domain to container port 8900.
+      - SERVICE_FQDN_APP_8900
+      - SALARY_API_URL=http://api:8000
     depends_on:
       api:
         condition: service_healthy
